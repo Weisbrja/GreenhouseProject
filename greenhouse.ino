@@ -37,7 +37,8 @@ void setup()
 	S.println("Done");
 
 	file = SD.open("file.txt", FILE_WRITE);
-	file.println("Day,Month,Year,Hour,Minute");
+	// TODO: fix next line
+	file.println("Day,Month,Year,Hour,Minute,Pressure,Temperature");
 	file.close();
 
 	// initialize temperature, air humidity and air pressure sensor
@@ -59,11 +60,11 @@ void loop()
 	String output;
 
 	DateTime now = rtc.now();
-	addToOutput(output, now.day());
-	addToOutput(output, now.month());
-	addToOutput(output, now.year());
-	addToOutput(output, now.hour());
-	addToOutput(output, now.minute());
+	addToOutput(output, String(now.day()));
+	addToOutput(output, String(now.month()));
+	addToOutput(output, String(now.year()));
+	addToOutput(output, String(now.hour()));
+	addToOutput(output, String(now.minute()));
 
 //	file.print(now.day());
 //	file.print(',');
@@ -76,10 +77,11 @@ void loop()
 //	file.print(now.minute());
 //	file.println();
 
+	// TODO: connect sensor to board and test
 	float pressure = bme280.getPressure();
 	float bar = pressure / 100000;
-	addToOutput(output, pressure);
-	addToOutput(output, bar);
+	addToOutput(output, String(pressure));
+	addToOutput(output, String(bar));
 
 	file.println(output);
 	file.close();
@@ -95,16 +97,4 @@ void addToOutput(String& output, String addition) {
 		output += ",";
 	}
 	output += addition;
-}
-
-void addToOutput(String& output, uint16_t addition) {
-	addToOutput(output, String(addition));
-}
-
-void addToOutput(String& output, int addition) {
-	addToOutput(output, String(addition));
-}
-
-void addToOutput(String& output, float addition) {
-	addToOutput(output, String(addition));
 }
