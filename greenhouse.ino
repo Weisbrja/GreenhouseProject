@@ -16,12 +16,7 @@ File file;
 void setup()
 {
 	S.begin(9600);
-
-	S.println("\n### Setup ###");
-
 	initModules();
-
-	S.println("\n### Loop ###");
 }
 
 void initModules() {
@@ -36,8 +31,10 @@ void initModules() {
 
 void loop()
 {
+	S.println("\n=== Loop ===");
+
 	// write data to file
-	S.print("\nWriting data to SD-Card: ");
+	S.print("Writing data to SD-Card: ");
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
 	{
@@ -63,12 +60,9 @@ void loop()
 		const char output[50];
 		sprintf(output, "%d.%d.%d %d:%02d:%02d,%s,%s", day, month, year, hour, now.minute(), now.second(), temperature, humidity);
 		file.println(output);
-
 		file.close();
 
-		S.println("Done");
-
-		S.println(">>> " + String(output));
+		S.println("Done\n>>>" + String(output));
 	}
 	else
 	{
@@ -77,7 +71,6 @@ void loop()
 		return;
 	}
 
-	// wait for 30 seconds
 	delay(30000);
 }
 
@@ -87,7 +80,8 @@ bool initRTC()
 	S.print("RTC: ");
 	if (rtc.begin())
 	{
-		rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // save current time to real time clock
+		// save current time to real time clock
+		rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 		S.println("Done");
 		return true;
 	}
@@ -126,10 +120,7 @@ bool initSDCard()
 		file.println(header);
 		file.close();
 
-		S.println("Done");
-
-		S.println(">>> " + header);
-
+		S.println("Done\n>>> " + header);
 		return true;
 	}
 	else
