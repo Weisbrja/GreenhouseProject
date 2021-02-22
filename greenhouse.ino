@@ -3,13 +3,14 @@
 #include <SPI.h>
 #include <SD.h>
 
-#include <Seeed_BME280.h>
 #include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 
-#define S Serial // replace every 'S' with 'Serial'
+#define S Serial
 
 RTC_DS3231 rtc; // real time clock
-BME280 bme280; // temperature, air humidity and air pressure sensor
+Adafruit_BME280 bme280; // temperature and air humidity sensor
 File file;
 
 void setup()
@@ -24,7 +25,7 @@ void setup()
 		S.println("Failed");
 		return;
 	}
-	rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // save current time to rtc
+	rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // save current time to real time clock
 	S.println("Done");
 
 	// initialize sd-card
@@ -36,14 +37,16 @@ void setup()
 	}
 	S.println("Done");
 
-	file = SD.open("file.txt", FILE_WRITE);
-	// TODO: fix next line
-	file.println("Day,Month,Year,Hour,Minute,Pressure,Temperature");
+	// write table header to file
+	file = SD.open("file.csv", FILE_WRITE);
+	String header = "Day,Month,Year,Hour,Minute,Temperature,Humidity";
+	file.println(header);
 	file.close();
+	S.println(header);
 
-	// initialize temperature, air humidity and air pressure sensor
+	// initialize temperature and air humidity sensor
 	S.print("Initializing BME280 module: ");
-	if(!bme280.init())
+	if(!bme280.begin(0x76))
 	{
 		S.println("Failed");
 		return;
@@ -53,48 +56,46 @@ void setup()
 
 void loop()
 {
-	// write data to sd-card
+	// write data to file
 	S.print("Writing data to SD-Card: ");
-	file = SD.open("file.txt", FILE_WRITE);
+	file = SD.open("file.csv", FILE_WRITE);
+	if (file)
+	{
+		String output;
 
-	String output;
+		// calculate date
+		DateTime now = rtc.now();
+		int day = now.day();
+		int month = now.month();
+		int hour = now.hour();
+		if (month > 3 || month == 3 && day >= 28)
+			hour = (hour + 1) % 24;
+		String date = String(day) + "." + String(month) + "." + String(now.year()) + " " + String(hour) + ":" + String(now.minute());
+		addToOutput(output, date);
 
-	DateTime now = rtc.now();
-	addToOutput(output, String(now.day()));
-	addToOutput(output, String(now.month()));
-	addToOutput(output, String(now.year()));
-	addToOutput(output, String(now.hour()));
-	addToOutput(output, String(now.minute()));
+		// measure temperature
+		addToOutput(output, String(bme280.readTemperature()));
 
-//	file.print(now.day());
-//	file.print(',');
-//	file.print(now.month());
-//	file.print(',');
-//	file.print(now.year());
-//	file.print(',');
-//	file.print(now.hour());
-//	file.print(',');
-//	file.print(now.minute());
-//	file.println();
+		// measure humidity
+		addToOutput(output, String(bme280.readHumidity()));
 
-	// TODO: connect sensor to board and test
-	float pressure = bme280.getPressure();
-	float bar = pressure / 100000;
-	addToOutput(output, String(pressure));
-	addToOutput(output, String(bar));
+		file.println(output);
+		file.close();
 
-	file.println(output);
-	file.close();
+		S.println("Done");
 
-	S.println("Done");
-	S.println(output);
+		S.println(output);
+	}
+	else
+		S.println("Failed");
 
+	// wait for five seconds
 	delay(5000);
 }
 
-void addToOutput(String& output, String addition) {
-	if (output != "") {
+void addToOutput(String& output, String addition)
+{
+	if (output.length() > 0)
 		output += ",";
-	}
 	output += addition;
 }
