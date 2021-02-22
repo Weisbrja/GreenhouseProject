@@ -2,4 +2,4 @@
 
 ## todo
 
-* get and merge sophie's code
+* get and merge Sophie's code
