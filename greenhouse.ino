@@ -13,6 +13,9 @@
 
 #define S Serial
 
+#define LOOP_DELAY 30000
+#define LCD_WIDTH  16
+
 RTC_DS3231 rtc; // real time clock
 Adafruit_BME280 bme280; // temperature and air humidity sensor
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
@@ -23,8 +26,8 @@ void setup()
 	S.begin(9600);
 	while (!S);
 
-	lcd.begin(16, 2);
-	lcd.setBacklight(HIGH);
+	lcd.begin(LCD_WIDTH, 2);
+	lcd.backlight();
 
 	initModules();
 }
@@ -43,12 +46,20 @@ void loop()
 {
 	S.println("\n=== Loop ===");
 
-	// write data to file
+	// measure temperature
+	const char temperature[10];
+	dtostrf(bme280.readTemperature(), 1, 2, temperature);
+
+	// measure humidity
+	const char humidity[10];
+	dtostrf(bme280.readHumidity(), 1, 2, humidity);
+
+	// write temperature and humidity to file
 	S.print("Writing data to SD-Card: ");
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
 	{
-		// calculate date
+		// calculate current date
 		DateTime now = rtc.now();
 		const int year = now.year();
 		const int month = now.month();
@@ -58,14 +69,6 @@ void loop()
 		if (year >= 2021 && month > 3 || month == 3 && day >= 28 && hour >= 2)
 			hour = (hour + 1) % 24;
 
-		// measure temperature
-		const char temperature[10];
-		dtostrf(bme280.readTemperature(), 1, 2, temperature);
-
-		// measure humidity
-		const char humidity[10];
-		dtostrf(bme280.readHumidity(), 1, 2, humidity);
-
 		// write to file
 		const char output[50];
 		sprintf(output, "%d.%d.%d %d:%02d:%02d,%s,%s", day, month, year, hour, now.minute(), now.second(), temperature, humidity);
@@ -73,13 +76,6 @@ void loop()
 		file.close();
 
 		S.println("Done\n>>>" + String(output));
-
-		// print to lcd
-		lcd.clear();
-		lcd.setCursor(0,0);
-		lcd.print(String(temperature) + "°C");
-		lcd.setCursor(0,1);
-		lcd.print(String(humidity) + '%');
 	}
 	else
 	{
@@ -88,7 +84,18 @@ void loop()
 		return;
 	}
 
-	delay(30000);
+	// print temperature and humidity to lcd
+	S.print("Printing temperature and humidity to LCD: ");
+	String temperature_s = String(temperature) + "C";
+	String humidity_s = String(humidity) + '%';
+	lcd.clear();
+	lcd.setCursor(LCD_WIDTH - temperature_s.length(), 0);
+	lcd.print(temperature_s);
+	lcd.setCursor(LCD_WIDTH - humidity_s.length(), 1);
+	lcd.print(humidity_s);
+	S.println("Done");
+
+	delay(LOOP_DELAY);
 }
 
 bool initRTC()
