@@ -1,11 +1,12 @@
+#include <Wire.h>
+
 #include <RTClib.h>
+
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 
 #include <SPI.h>
 #include <SD.h>
-
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
 
 #define S Serial
 
