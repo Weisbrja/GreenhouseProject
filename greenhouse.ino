@@ -33,11 +33,12 @@ void setup()
 }
 
 void initModules() {
-	S.println("\n=== Initializing Modules ===");
+	S.println("\n=== Initializing ===");
+
 
 	if (!(initRTC() && initBME280() && initSDCard()))
 	{
-		delay(5000);
+		delay(1000);
 		initModules();
 	}
 }
@@ -111,6 +112,9 @@ bool initRTC()
 	else
 	{
 		S.println("Failed");
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print("RTC: Failed");
 		return false;
 	}
 }
@@ -126,6 +130,9 @@ bool initBME280()
 	else
 	{
 		S.println("Failed");
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print("BME280: Failed");
 		return false;
 	}
 }
@@ -147,6 +154,9 @@ bool initSDCard()
 	else
 	{
 		S.println("Failed");
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print("SD-Card: Failed");
 		return false;
 	}
 }
