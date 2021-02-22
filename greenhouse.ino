@@ -74,6 +74,7 @@ void loop()
 		S.println("Done\n>>>" + String(output));
 
 		// print to lcd
+		lcd.clear();
 		lcd.setCursor(0,0);
 		lcd.print(String(temperature) + "°C");
 		lcd.setCursor(0,1);
