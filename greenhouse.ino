@@ -8,13 +8,14 @@
 #include <SPI.h>
 #include <SD.h>
 
+#include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 
 #define S Serial
 
 RTC_DS3231 rtc; // real time clock
 Adafruit_BME280 bme280; // temperature and air humidity sensor
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 File file;
 
 void setup()
@@ -22,8 +23,8 @@ void setup()
 	S.begin(9600);
 	while (!S);
 
-	lcd.init();
-	lcd.backlight();
+	lcd.begin(16, 2);
+	lcd.setBacklight(HIGH);
 
 	initModules();
 }
