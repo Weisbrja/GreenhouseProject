@@ -35,7 +35,6 @@ void setup()
 void initModules() {
 	S.println("\n=== Initializing ===");
 
-
 	if (!(initRTC() && initBME280() && initSDCard()))
 	{
 		delay(1000);
