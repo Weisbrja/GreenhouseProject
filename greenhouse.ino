@@ -15,49 +15,29 @@ File file;
 
 void setup()
 {
-	// initialize serial monitor
 	S.begin(9600);
 
-	// initialize real time clock
-	S.print("Initializing RTC module: ");
-	if (!rtc.begin())
-	{
-		S.println("Failed");
-		return;
-	}
-	rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // save current time to real time clock
-	S.println("Done");
+	S.println("\n### Setup ###");
 
-	// initialize sd-card
-	S.print("Initializing SD-Card module: ");
-	if (!SD.begin(5))
-	{
-		S.println("Failed");
-		return;
-	}
-	S.println("Done");
+	initModules();
 
-	// write table header to file
-	file = SD.open("file.csv", FILE_WRITE);
-	String header = "Day,Month,Year,Hour,Minute,Temperature,Humidity";
-	file.println(header);
-	file.close();
-	S.println(header);
+	S.println("\n### Loop ###");
+}
 
-	// initialize temperature and air humidity sensor
-	S.print("Initializing BME280 module: ");
-	if(!bme280.begin(0x76))
+void initModules() {
+	S.println("\n=== Initializing Modules ===");
+
+	if (!(initRTC() && initBME280() && initSDCard()))
 	{
-		S.println("Failed");
-		return;
+		delay(5000);
+		initModules();
 	}
-	S.println("Done");
 }
 
 void loop()
 {
 	// write data to file
-	S.print("Writing data to SD-Card: ");
+	S.print("\nWriting data to SD-Card: ");
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
 	{
@@ -67,7 +47,6 @@ void loop()
 		const int month = now.month();
 		const int day = now.day();
 		int hour = now.hour();
-		const int minute = now.minute();
 
 		if (year >= 2021 && month > 3 || month == 3 && day >= 28 && hour >= 2)
 			hour = (hour + 1) % 24;
@@ -82,18 +61,80 @@ void loop()
 
 		// write to file
 		const char output[50];
-		sprintf(output, "%d.%d.%d %d:%2d,%s,%s", day, month, year, hour, minute, temperature, humidity);
+		sprintf(output, "%d.%d.%d %d:%02d:%02d,%s,%s", day, month, year, hour, now.minute(), now.second(), temperature, humidity);
 		file.println(output);
 
 		file.close();
 
 		S.println("Done");
 
-		S.println(output);
+		S.println(">>> " + String(output));
 	}
 	else
+	{
 		S.println("Failed");
+		initModules();
+		return;
+	}
 
-	// wait for five seconds
-	delay(5000);
+	// wait for 30 seconds
+	delay(30000);
+}
+
+bool initRTC()
+{
+	// initialize real time clock
+	S.print("RTC: ");
+	if (rtc.begin())
+	{
+		rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // save current time to real time clock
+		S.println("Done");
+		return true;
+	}
+	else
+	{
+		S.println("Failed");
+		return false;
+	}
+}
+
+bool initBME280()
+{
+	// initialize temperature and air humidity sensor
+	S.print("BME280: ");
+	if (bme280.begin(0x76))
+	{
+		S.println("Done");
+		return true;
+	}
+	else
+	{
+		S.println("Failed");
+		return false;
+	}
+}
+
+bool initSDCard()
+{
+	// initialize sd-card
+	S.print("SD-Card: ");
+	if (SD.begin(5))
+	{
+		// write table header to file
+		file = SD.open("file.csv", FILE_WRITE);
+		String header = "Day,Month,Year,Hour,Minute,Temperature,Humidity";
+		file.println(header);
+		file.close();
+
+		S.println("Done");
+
+		S.println(">>> " + header);
+
+		return true;
+	}
+	else
+	{
+		S.println("Failed");
+		return false;
+	}
 }
