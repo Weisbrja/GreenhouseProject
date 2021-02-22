@@ -61,25 +61,30 @@ void loop()
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
 	{
-		String output;
-
 		// calculate date
 		DateTime now = rtc.now();
-		int day = now.day();
-		int month = now.month();
+		const int year = now.year();
+		const int month = now.month();
+		const int day = now.day();
 		int hour = now.hour();
-		if (month > 3 || month == 3 && day >= 28)
+		const int minute = now.minute();
+
+		if (year >= 2021 && month > 3 || month == 3 && day >= 28 && hour >= 2)
 			hour = (hour + 1) % 24;
-		String date = String(day) + "." + String(month) + "." + String(now.year()) + " " + String(hour) + ":" + String(now.minute());
-		addToOutput(output, date);
 
 		// measure temperature
-		addToOutput(output, String(bme280.readTemperature()));
+		const char temperature[10];
+		dtostrf(bme280.readTemperature(), 1, 2, temperature);
 
 		// measure humidity
-		addToOutput(output, String(bme280.readHumidity()));
+		const char humidity[10];
+		dtostrf(bme280.readHumidity(), 1, 2, humidity);
 
+		// write to file
+		const char output[50];
+		sprintf(output, "%d.%d.%d %d:%2d,%s,%s", day, month, year, hour, minute, temperature, humidity);
 		file.println(output);
+
 		file.close();
 
 		S.println("Done");
@@ -91,11 +96,4 @@ void loop()
 
 	// wait for five seconds
 	delay(5000);
-}
-
-void addToOutput(String& output, String addition)
-{
-	if (output.length() > 0)
-		output += ",";
-	output += addition;
 }
