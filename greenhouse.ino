@@ -84,7 +84,7 @@ void loop()
 		return;
 	}
 
-	// print temperature and humidity to lcd
+	// print temperature and humidity on lcd
 	S.print("Printing temperature and humidity to LCD: ");
 	String temperature_s = String(temperature) + "C";
 	String humidity_s = String(humidity) + '%';
