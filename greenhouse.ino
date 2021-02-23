@@ -143,7 +143,7 @@ bool initSDCard()
 	{
 		// write table header to file
 		file = SD.open("file.csv", FILE_WRITE);
-		String header = "Day,Month,Year,Hour,Minute,Temperature,Humidity";
+		String header = "Time,Temperature,Humidity";
 		file.println(header);
 		file.close();
 
