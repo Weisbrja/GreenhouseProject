@@ -24,7 +24,7 @@ File file;
 void setup()
 {
 	S.begin(9600);
-	while (!S);
+	delay(500);
 
 	lcd.begin(LCD_WIDTH, 2);
 	lcd.backlight();
