@@ -65,7 +65,7 @@ void loop()
 	dtostrf(bme280.readHumidity(), 1, 2, airHumidity_c);
 
 	// measure soil moisture in %
-	int soilMoisture = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), PUMP_MIN, PUMP_MAX, 100, 0);
+	const int soilMoisture = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), PUMP_MIN, PUMP_MAX, 100, 0);
 
 	// print temperature, air humidity and soil moisture on lcd
 	S.print("Printing temperature, air humidity and soil moisture on LCD: ");
