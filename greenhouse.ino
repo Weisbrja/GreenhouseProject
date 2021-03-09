@@ -13,14 +13,15 @@
 
 #define S Serial
 
-#define LOOP_DELAY               30000
-#define LCD_WIDTH                16
-#define SOIL_MOISTURE_SENSOR_PIN A0
-#define PUMP_PIN                 10
-#define PUMP_MIN                 425
-#define PUMP_MAX                 1023
-#define PUMP_THRESHOLD           50
-#define PUMP_DELAY               5000
+// global constants
+#define LOOP_DELAY                 30000
+#define LCD_WIDTH                  16
+#define SOIL_MOISTURE_SENSOR_PIN   A0
+#define PUMP_PIN                   10
+#define PUMP_MIN                   425
+#define PUMP_MAX                   1023
+#define PUMP_THRESHOLD             50
+#define PUMP_DELAY                 5000
 
 RTC_DS3231 rtc; // real time clock
 Adafruit_BME280 bme280; // temperature and air humidity sensor
