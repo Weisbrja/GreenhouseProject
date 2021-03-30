@@ -17,6 +17,7 @@
 #define LOOP_DELAY                 30000
 #define LCD_WIDTH                  16
 #define SOIL_MOISTURE_SENSOR_PIN   A0
+#define SD_CARD_PIN                5
 #define PUMP_PIN                   10
 #define PUMP_MIN                   425
 #define PUMP_MAX                   1023
@@ -43,7 +44,8 @@ void setup()
 	initModules();
 }
 
-void initModules() {
+void initModules()
+{
 	S.println("\n=== Initializing ===");
 
 	if (!(initRTC() && initBME280() && initSDCard()))
@@ -167,7 +169,7 @@ bool initBME280()
 bool initSDCard()
 {
 	S.print("SD-Card: ");
-	if (SD.begin(5))
+	if (SD.begin(SD_CARD_PIN))
 	{
 		// write table header to file
 		file = SD.open("file.csv", FILE_WRITE);
