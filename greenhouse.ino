@@ -19,8 +19,8 @@
 #define SOIL_MOISTURE_SENSOR_PIN   A0
 #define SD_CARD_PIN                5
 #define PUMP_PIN                   10
-#define PUMP_MIN                   425
-#define PUMP_MAX                   1023
+#define SOIL_MOISTURE_MIN                   425
+#define SOIL_MOISTURE_MAX                   1023
 #define PUMP_THRESHOLD             20
 #define PUMP_DELAY                 5000
 
@@ -61,7 +61,7 @@ void loop()
 	snprintf(airHumidity, AIR_HUMIDITY_LENGTH, "H=%s%%", airHumidityRaw);
 
 	// measure soil moisture in %
-	const int soilMoistureValue = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), PUMP_MIN, PUMP_MAX, 100, 0);
+	const int soilMoistureValue = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), SOIL_MOISTURE_MIN, SOIL_MOISTURE_MAX, 100, 0);
 
 #define SOIL_MOISTURE_LENGTH 7
 	const char soilMoisture[SOIL_MOISTURE_LENGTH];
