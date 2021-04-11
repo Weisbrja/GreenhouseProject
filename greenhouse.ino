@@ -89,7 +89,7 @@ void loop()
 	lcd.print(temperature);
 	S.println("Done");
 
-	// write date, soil moisture, air humidity and temperature to file
+	// write date, soil moisture, air humidity and temperature to file on sd-card
 	S.print("Writing data to SD-Card: ");
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
@@ -99,9 +99,9 @@ void loop()
 		const int year = now.year();
 		const int month = now.month();
 		const int day = now.day();
-		const int hour = now.hour() % 24; // offset hour by one
+		const int hour = now.hour() % 24;
 
-		// write to file
+		// write to file on sd-card
 #define OUTPUT_LENGTH 50
 		const char output[OUTPUT_LENGTH];
 		snprintf(output, OUTPUT_LENGTH, "%02d.%02d.%d %02d:%02d:%02d,%d,%s,%s", day, month, year, hour, now.minute(), now.second(), soilMoistureValue, temperatureRaw, airHumidityRaw);
