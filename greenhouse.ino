@@ -29,17 +29,6 @@ Adafruit_BME280 bme280; // temperature and air humidity sensor
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // i2c lcd
 File file; // file on sd-card
 
-void initModules()
-{
-	S.println("\n=== Initializing ===");
-
-	if (!(initRTC() && initBME280() && initSDCard()))
-	{
-		delay(1000);
-		initModules();
-	}
-}
-
 void setup()
 {
 	// declare input and output pins
@@ -144,6 +133,17 @@ void loop()
 	}
 	else
 		delay(LOOP_DELAY);
+}
+
+void initModules()
+{
+	S.println("\n=== Initializing ===");
+
+	if (!(initRTC() && initBME280() && initSDCard()))
+	{
+		delay(1000);
+		initModules();
+	}
 }
 
 bool initRTC()
