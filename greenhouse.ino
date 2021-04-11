@@ -21,28 +21,13 @@
 #define PUMP_PIN                   10
 #define PUMP_MIN                   425
 #define PUMP_MAX                   1023
-#define PUMP_THRESHOLD             50
+#define PUMP_THRESHOLD             20
 #define PUMP_DELAY                 5000
 
 RTC_DS3231 rtc; // real time clock
 Adafruit_BME280 bme280; // temperature and air humidity sensor
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
-File file;
-
-void setup()
-{
-	pinMode(SOIL_MOISTURE_SENSOR_PIN, INPUT);
-	pinMode(PUMP_PIN, OUTPUT);
-
-	S.begin(9600);
-
-	lcd.begin(LCD_WIDTH, 2);
-	lcd.backlight();
-
-	delay(1000);
-
-	initModules();
-}
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // i2c lcd
+File file; // file on sd-card
 
 void initModules()
 {
@@ -55,36 +40,67 @@ void initModules()
 	}
 }
 
+void setup()
+{
+	// declare input and output pins
+	pinMode(SOIL_MOISTURE_SENSOR_PIN, INPUT);
+	pinMode(PUMP_PIN, OUTPUT);
+
+	// initialize serial monitor
+	S.begin(9600);
+
+	// initialize lcd
+	lcd.begin(LCD_WIDTH, 2);
+	lcd.backlight();
+
+	delay(1000);
+
+	initModules();
+}
+
 void loop()
 {
 	S.println("\n=== Loop ===");
 
-	// measure temperature in C
-	const char temperature_c[10];
-	dtostrf(bme280.readTemperature(), 1, 2, temperature_c);
-
 	// measure air humidity in %
-	const char airHumidity_c[10];
-	dtostrf(bme280.readHumidity(), 1, 2, airHumidity_c);
+#define AIR_HUMIDITY_RAW_LENGTH 7
+	const char airHumidityRaw[AIR_HUMIDITY_RAW_LENGTH];
+	dtostrf(bme280.readHumidity(), 1, 2, airHumidityRaw);
+
+#define AIR_HUMIDITY_LENGTH AIR_HUMIDITY_RAW_LENGTH + 3
+	const char airHumidity[AIR_HUMIDITY_LENGTH];
+	snprintf(airHumidity, AIR_HUMIDITY_LENGTH, "H=%s%%", airHumidityRaw);
 
 	// measure soil moisture in %
-	const int soilMoisture = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), PUMP_MIN, PUMP_MAX, 100, 0);
+	const int soilMoistureValue = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), PUMP_MIN, PUMP_MAX, 100, 0);
 
-	// print temperature, air humidity and soil moisture on lcd
-	S.print("Printing temperature, air humidity and soil moisture on LCD: ");
-	String temperature_s = "T=" + String(temperature_c) + 'C';
-	String airHumidity_s = "H=" + String(airHumidity_c) + '%';
-	String soilMoisture_s = "M=" + String(soilMoisture) + '%';
+#define SOIL_MOISTURE_LENGTH 7
+	const char soilMoisture[SOIL_MOISTURE_LENGTH];
+	snprintf(soilMoisture, SOIL_MOISTURE_LENGTH, "M=%d%%", soilMoistureValue);
+
+	// measure temperature in °C
+#define TEMPERATURE_RAW_LENGTH 7
+	const char temperatureRaw[TEMPERATURE_RAW_LENGTH];
+	dtostrf(bme280.readTemperature(), 1, 2, temperatureRaw);
+
+#define TEMPERATURE_LENGTH TEMPERATURE_RAW_LENGTH + 3
+	const char temperature[TEMPERATURE_LENGTH];
+	snprintf(temperature, TEMPERATURE_LENGTH, "T=%sC", temperatureRaw);
+
+	// print soil moisture, air humidity and temperature on lcd
+	S.print("Printing soil moisture, air humidity and temperature on LCD: ");
 	lcd.clear();
 	lcd.setCursor(0, 0);
-	lcd.print(soilMoisture_s);
-	lcd.setCursor(LCD_WIDTH - airHumidity_s.length(), 0);
-	lcd.print(airHumidity_s);
-	lcd.setCursor(LCD_WIDTH - temperature_s.length(), 1);
-	lcd.print(temperature_s);
+	lcd.print(soilMoisture);
+	S.println(strlen(airHumidityRaw));
+	S.println(strlen(temperatureRaw));
+	lcd.setCursor(LCD_WIDTH - (AIR_HUMIDITY_LENGTH - AIR_HUMIDITY_RAW_LENGTH) - strlen(airHumidityRaw), 0);
+	lcd.print(airHumidity);
+	lcd.setCursor(LCD_WIDTH - (TEMPERATURE_LENGTH - TEMPERATURE_RAW_LENGTH) - strlen(temperatureRaw), 1);
+	lcd.print(temperature);
 	S.println("Done");
 
-	// write date, temperature, air humidity and soil moisture to file
+	// write date, soil moisture, air humidity and temperature to file
 	S.print("Writing data to SD-Card: ");
 	file = SD.open("file.csv", FILE_WRITE);
 	if (file)
@@ -94,28 +110,30 @@ void loop()
 		const int year = now.year();
 		const int month = now.month();
 		const int day = now.day();
-		int hour = now.hour();
-
-		if (year == 2021 && month > 3 || month == 3 && day >= 28 && hour >= 2)
-			hour = (hour + 1) % 24;
+		const int hour = now.hour() % 24; // offset hour by one
 
 		// write to file
-		const char output[50];
-		sprintf(output, "%d.%d.%d %d:%02d:%02d,%s,%s,%d", day, month, year, hour, now.minute(), now.second(), temperature_c, airHumidity_c, soilMoisture);
+#define OUTPUT_LENGTH 50
+		const char output[OUTPUT_LENGTH];
+		snprintf(output, OUTPUT_LENGTH, "%02d.%02d.%d %02d:%02d:%02d,%d,%s,%s", day, month, year, hour, now.minute(), now.second(), soilMoistureValue, temperatureRaw, airHumidityRaw);
 		file.println(output);
 		file.close();
 
-		S.println("Done\n>>>" + String(output));
+#define PRINT_OUTPUT_LENGTH OUTPUT_LENGTH + 8
+		const char printOutput[PRINT_OUTPUT_LENGTH];
+		snprintf(printOutput, PRINT_OUTPUT_LENGTH, "Done\n>>> %s", output);
+		S.println(printOutput);
 	}
 	else
 	{
+		// reinitialze modules because file could not be written
 		S.println("Failed");
 		initModules();
 		return;
 	}
 
 	// turn pump on if the soil moisture is below the pump threshold
-	if (soilMoisture < PUMP_THRESHOLD)
+	if (soilMoistureValue < PUMP_THRESHOLD)
 	{
 		S.print("Pumping water: ");
 		digitalWrite(PUMP_PIN, HIGH);
@@ -173,11 +191,11 @@ bool initSDCard()
 	{
 		// write table header to file
 		file = SD.open("file.csv", FILE_WRITE);
-		String header = "Time,Temperature in C,Humidity in %,Soil moisture in %";
-		file.println(header);
+#define HEADER "Time,Soil moisture in %,Air humidity in %,Temperature in °C"
+		file.println(HEADER);
 		file.close();
 
-		S.println("Done\n>>> " + header);
+		S.println("Done\n>>> " HEADER);
 		return true;
 	}
 	else
