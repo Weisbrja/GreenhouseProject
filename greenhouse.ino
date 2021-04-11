@@ -81,8 +81,6 @@ void loop()
 	lcd.clear();
 	lcd.setCursor(0, 0);
 	lcd.print(soilMoisture);
-	S.println(strlen(airHumidityRaw));
-	S.println(strlen(temperatureRaw));
 	lcd.setCursor(LCD_WIDTH - (AIR_HUMIDITY_LENGTH - AIR_HUMIDITY_RAW_LENGTH) - strlen(airHumidityRaw), 0);
 	lcd.print(airHumidity);
 	lcd.setCursor(LCD_WIDTH - (TEMPERATURE_LENGTH - TEMPERATURE_RAW_LENGTH) - strlen(temperatureRaw), 1);
