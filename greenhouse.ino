@@ -191,7 +191,7 @@ bool initSDCard()
 	{
 		// write table header to file
 		file = SD.open("file.csv", FILE_WRITE);
-#define HEADER "Time,Soil moisture in %,Air humidity in %,Temperature in °C"
+#define HEADER "Time,Soil moisture in %,Air humidity in %,Temperature in C"
 		file.println(HEADER);
 		file.close();
 
