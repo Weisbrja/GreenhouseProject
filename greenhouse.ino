@@ -78,7 +78,7 @@ void loop()
 
 	// check if the automatic irrigation needs to be recalibrated
 	if (soilMoistureValue < 0 || soilMoistureValue > 100)
-		S.println("!!! Recalibrate automatic irrigation");
+		S.println("!!! Recalibrate the automatic irrigation");
 
 	// print soil moisture, air humidity and temperature on lcd
 	S.print("Printing soil moisture, air humidity and temperature on LCD: ");
