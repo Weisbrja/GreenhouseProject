@@ -20,7 +20,7 @@
 #define SOIL_MOISTURE_SENSOR_PIN   A0
 #define LOOP_DELAY                 30000
 #define PUMP_DELAY                 5000
-#define SOIL_MOISTURE_MIN          425
+#define SOIL_MOISTURE_MIN          900
 #define SOIL_MOISTURE_MAX          1023
 #define PUMP_THRESHOLD             20
 
@@ -76,6 +76,10 @@ void loop()
 	const char temperature[TEMPERATURE_LENGTH];
 	snprintf(temperature, TEMPERATURE_LENGTH, "T=%sC", temperatureRaw);
 
+	// check if the automatic irrigation needs to be recalibrated
+	if (soilMoistureValue < 0 || soilMoistureValue > 100)
+		S.println("!!! Recalibrate automatic irrigation");
+
 	// print soil moisture, air humidity and temperature on lcd
 	S.print("Printing soil moisture, air humidity and temperature on LCD: ");
 	lcd.clear();
@@ -102,7 +106,7 @@ void loop()
 		// write to file on sd-card
 #define OUTPUT_LENGTH 50
 		const char output[OUTPUT_LENGTH];
-		snprintf(output, OUTPUT_LENGTH, "%02d.%02d.%d %02d:%02d:%02d,%d,%s,%s", day, month, year, hour, now.minute(), now.second(), soilMoistureValue, temperatureRaw, airHumidityRaw);
+		snprintf(output, OUTPUT_LENGTH, "%02d.%02d.%d %02d:%02d:%02d,%d,%s,%s", day, month, year, hour, now.minute(), now.second(), soilMoistureValue, airHumidityRaw, temperatureRaw);
 		file.println(output);
 		file.close();
 
