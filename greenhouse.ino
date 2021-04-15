@@ -20,7 +20,7 @@
 #define SOIL_MOISTURE_SENSOR_PIN   A0
 #define LOOP_DELAY                 30000
 #define PUMP_DELAY                 5000
-#define SOIL_MOISTURE_MIN          900
+#define SOIL_MOISTURE_MIN          400
 #define SOIL_MOISTURE_MAX          1023
 #define PUMP_THRESHOLD             20
 
@@ -51,6 +51,13 @@ void loop()
 {
 	S.println("\n=== Loop ===");
 
+	// measure soil moisture in %
+	const int soilMoistureValue = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), SOIL_MOISTURE_MIN, SOIL_MOISTURE_MAX, 100, 0);
+
+#define SOIL_MOISTURE_LENGTH 7
+	const char soilMoisture[SOIL_MOISTURE_LENGTH];
+	snprintf(soilMoisture, SOIL_MOISTURE_LENGTH, "M=%d%%", soilMoistureValue);
+
 	// measure air humidity in %
 #define AIR_HUMIDITY_RAW_LENGTH 7
 	const char airHumidityRaw[AIR_HUMIDITY_RAW_LENGTH];
@@ -59,13 +66,6 @@ void loop()
 #define AIR_HUMIDITY_LENGTH AIR_HUMIDITY_RAW_LENGTH + 3
 	const char airHumidity[AIR_HUMIDITY_LENGTH];
 	snprintf(airHumidity, AIR_HUMIDITY_LENGTH, "H=%s%%", airHumidityRaw);
-
-	// measure soil moisture in %
-	const int soilMoistureValue = map(analogRead(SOIL_MOISTURE_SENSOR_PIN), SOIL_MOISTURE_MIN, SOIL_MOISTURE_MAX, 100, 0);
-
-#define SOIL_MOISTURE_LENGTH 7
-	const char soilMoisture[SOIL_MOISTURE_LENGTH];
-	snprintf(soilMoisture, SOIL_MOISTURE_LENGTH, "M=%d%%", soilMoistureValue);
 
 	// measure temperature in °C
 #define TEMPERATURE_RAW_LENGTH 7
@@ -85,9 +85,9 @@ void loop()
 	lcd.clear();
 	lcd.setCursor(0, 0);
 	lcd.print(soilMoisture);
-	lcd.setCursor(LCD_WIDTH - (AIR_HUMIDITY_LENGTH - AIR_HUMIDITY_RAW_LENGTH) - strlen(airHumidityRaw), 0);
+	lcd.setCursor(LCD_WIDTH - strlen(airHumidity), 0);
 	lcd.print(airHumidity);
-	lcd.setCursor(LCD_WIDTH - (TEMPERATURE_LENGTH - TEMPERATURE_RAW_LENGTH) - strlen(temperatureRaw), 1);
+	lcd.setCursor(LCD_WIDTH - strlen(temperature), 1);
 	lcd.print(temperature);
 	S.println("Done");
 
