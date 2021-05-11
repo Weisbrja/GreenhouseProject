@@ -19,15 +19,17 @@
 #define PUMP_PIN                   10
 #define SOIL_MOISTURE_SENSOR_PIN   A0
 #define LOOP_DELAY                 30000
-#define PUMP_DELAY                 20000
-#define SOIL_MOISTURE_MIN          200
-#define SOIL_MOISTURE_MAX          800
-#define PUMP_THRESHOLD             30
 
-RTC_DS3231 rtc; // real time clock
-Adafruit_BME280 bme280; // temperature and air humidity sensor
+// global constants for the automatic irrigation
+#define SOIL_MOISTURE_MIN          200   // the value at which the measured moisture is 0%
+#define SOIL_MOISTURE_MAX          800   // the value at which the measured moisture is 100%
+#define PUMP_THRESHOLD             20    // the percentage at which the pump is turned on
+#define PUMP_DELAY                 10000 // how long the pump should be turned on
+
+RTC_DS3231 rtc;                                                // real time clock
+Adafruit_BME280 bme280;                                        // temperature and air humidity sensor
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // i2c lcd
-File file; // file on sd-card
+File file;                                                     // file on sd-card
 
 void setup()
 {
@@ -117,7 +119,7 @@ void loop()
 	}
 	else
 	{
-		// reinitialze modules because file could not be written
+		// reinitialize modules because file could not be written
 		S.println("Failed");
 		initModules();
 		return;
@@ -153,7 +155,7 @@ bool initRTC()
 	S.print("RTC: ");
 	if (rtc.begin())
 	{
-		// save current time to real time clock
+		// save the current time to real time clock
 		rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 		S.println("Done");
 		return true;
